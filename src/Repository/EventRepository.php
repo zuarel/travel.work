@@ -19,6 +19,24 @@ class EventRepository extends ServiceEntityRepository
         parent::__construct($registry, Event::class);
     }
 
+    public function findAllByUserId(int $user_id, $filters = [])
+    {
+        $query = $this->createQueryBuilder('e')
+            ->orWhere('e.creator = :user_id')
+            ->orWhere('e.invited = :user_id')
+            ->andWhere('e.status <> :deleted')
+            ->setParameter('user_id', $user_id)
+            ->setParameter('deleted', Event::STATUS_DELETED);
+
+        if (!empty($filters['name'])) {
+            $query->andWhere('e.name LIKE :name');
+            $query->setParameter('name', '%' . $filters['name'] . '%');
+        }
+
+        return $query->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return Event[] Returns an array of Event objects
     //  */
