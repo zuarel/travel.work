@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Entity\User;
 use Doctrine\Persistence\ManagerRegistry;
-use Firebase\JWT\JWT;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AuthService
@@ -13,17 +12,20 @@ class AuthService
     private \Doctrine\Persistence\ObjectRepository $repository;
     private \Doctrine\Persistence\ObjectManager $em;
     private UserPasswordHasherInterface $password_hasher;
+    private TokenService $token_service;
 
-    public function __construct(ManagerRegistry $doctrine, UserPasswordHasherInterface $password_hasher)
+    public function __construct(ManagerRegistry $doctrine, UserPasswordHasherInterface $password_hasher, TokenService $token_service)
     {
         $this->repository = $doctrine->getRepository(User::class);
         $this->em = $doctrine->getManager();
         $this->password_hasher = $password_hasher;
+        $this->token_service = $token_service;
     }
 
     public function login($username, $password)
     {
 
+        /** @var User $user */
         $user = $this->repository->findOneBy(['email' => $username]);
 
         if (!$user) {
@@ -36,13 +38,10 @@ class AuthService
             throw new \Error('Пользователь с такой почтой или паролем не найден');
         }
 
-        $key = 'jwt_secret_key';
-
-        $token = JWT::encode([
+        $token = $this->token_service->getToken([
             'user_id' => $user->getId(),
-            'username' => $user->getUserIdentifier(),
-            'exp' => time() + 60 * 15 // 15 minutes
-        ], $key);
+            'username' => $user->getUserIdentifier()
+        ]);
 
         return $token;
     }
