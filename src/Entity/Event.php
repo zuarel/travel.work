@@ -10,6 +10,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Event
 {
+
+    const STATUS_CREATED = 'created';
+    const STATUS_ACCEPTED = 'accepted';
+    const STATUS_DECLINED = 'declined';
+    const STATUS_DELETED = 'deleted';
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -33,6 +39,12 @@ class Event
 
     /** @ORM\Column(type="integer") */
     private $invited;
+
+    /** @ORM\Column(type="string", length=255) */
+    private $name;
+
+    /** @ORM\Column(type="string", length=20) */
+    private $status = self::STATUS_CREATED;
 
     public function getId(): ?int
     {
@@ -115,4 +127,55 @@ class Event
         $this->invited = $invited;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param mixed $name
+     */
+    public function setName($name): void
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param string $status
+     */
+    public function setStatus(string $status): void
+    {
+        $this->status = $status;
+    }
+
+    public function hasAccessForUser(int $user_id)
+    {
+        if($this->getCreator() !== $user_id && $this->getInvited() !== $user_id) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isNowOn()
+    {
+        $now = time();
+        return $this->getStartAt() < $now && $this->getEndAt() > $now;
+    }
+
+    public function isOwner(int $user_id)
+    {
+        return $this->getCreator() === $user_id;
+    }
 }
