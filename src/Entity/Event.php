@@ -18,8 +18,7 @@ class Event
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="events")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\Column(type="integer")
      */
     private $creator;
 
@@ -32,7 +31,7 @@ class Event
     /** @ORM\Column(type="integer") */
     private $create_at;
 
-    /** @ORM\ManyToOne(targetEntity=User::class) */
+    /** @ORM\Column(type="integer") */
     private $invited;
 
     public function getId(): ?int
@@ -40,12 +39,12 @@ class Event
         return $this->id;
     }
 
-    public function getCreator(): ?User
+    public function getCreator(): int
     {
         return $this->creator;
     }
 
-    public function setCreator(?User $creator): self
+    public function setCreator(int $creator): self
     {
         $this->creator = $creator;
 
